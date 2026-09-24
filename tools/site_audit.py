@@ -27,7 +27,7 @@ SUBSCRIPTION_DISCOUNT = 15
 FORMSPREE = "https://formspree.io/f/mzdorlpr"
 CALENDLY = "https://calendly.com/hello-myspotix/10min"
 EMAIL = "hello@myspotix.com"
-PHONE_TEL = "tel:+16479063547"
+PHONE_TEL = "tel:+16464443314"
 FORM_FIELDS = {"name", "email", "business", "spot_size", "message"}
 
 # Phrases removed because they could not be verified. Case-insensitive.

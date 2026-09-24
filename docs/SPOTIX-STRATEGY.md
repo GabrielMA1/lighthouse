@@ -43,7 +43,7 @@ Presented as **targets**. Terms §9 says delivery dates are estimates and not gu
 
 ## Contact and integrations
 
-- hello@myspotix.com · 647-906-3547 · Toronto, Ontario (no street address; don't add one).
+- hello@myspotix.com · 646-444-3314 · Toronto, Ontario (no street address; don't add one).
 - Inquiry form: Formspree `https://formspree.io/f/mzdorlpr` (fields: `name`, `email`, `business`, `spot_size`, `message`, plus the `_gotcha` honeypot).
 - Calls: Calendly `https://calendly.com/hello-myspotix/10min`.
 - LinkedIn: `https://www.linkedin.com/in/gabrielmacovei` (a personal profile, so it's labelled "Gabriel Macovei on LinkedIn", not "Follow us").
