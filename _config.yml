@@ -1,0 +1,7 @@
+# GitHub Pages (Jekyll) settings.
+# Keep internal documentation and QA tooling out of the published site.
+# The HTML pages have no front matter, so Jekyll copies them unchanged.
+exclude:
+  - docs/
+  - tools/
+  - README.md
