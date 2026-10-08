@@ -106,20 +106,34 @@ server.listen(0, async () => {
     console.log('ok   FAQ keyboard');
   }
 
-  // 4. Spot-size picker changes the highlighted area
+  // 4. Rate card diagrams are drawn to proportion (1/8 : 1/4 : 1/2 : full)
   {
     const { ctx, page } = await newPage(browser, base, [1440, 900]);
     await page.goto(base + 'index.html');
-    const spot = page.locator('.sizer .mp-spot');
-    const w1 = (await spot.boundingBox()).width;
-    await page.locator('label[for="size-full"]').click();
-    const box = await spot.boundingBox();
-    if (!(box.height > 0 && box.width === w1 && (await page.locator('.size-detail--full').isVisible()))) fail('size picker did not switch to Full');
-    await page.locator('label[for="size-page"]').click();
-    if (!((await spot.boundingBox()).width > w1 * 1.8)) fail('size picker did not switch to full page');
+    const areas = await page.$$eval('.ratecard .plan b', (els) => els.map((el) => { const r = el.getBoundingClientRect(); return r.width * r.height; }));
+    if (areas.length !== 4) fail(`expected 4 rate card diagrams, found ${areas.length}`);
+    for (let i = 1; i < areas.length; i++) {
+      const ratio = areas[i] / areas[i - 1];
+      if (ratio < 1.8 || ratio > 2.4) fail(`rate card diagram ${i} is ${ratio.toFixed(2)}x the previous one, expected about 2x`);
+    }
     await ctx.close();
-    console.log('ok   size picker');
+    console.log('ok   rate card proportions');
   }
+
+  // 4b. Next booking deadline is computed from the visitor's date
+  for (const [now, expectDeadline, expectMail] of [
+    ['2026-10-08T12:00:00', 'Thursday, October 15', 'November 1'],
+    ['2026-10-20T12:00:00', 'Sunday, November 15', 'December 1'],
+    ['2026-12-31T12:00:00', 'Friday, January 15', 'February 1'],
+  ]) {
+    const { ctx, page } = await newPage(browser, base, [1440, 900]);
+    await page.clock.setFixedTime(new Date(now));
+    await page.goto(base + 'index.html');
+    const text = await page.locator('#next-deadline').innerText();
+    if (!text.includes(expectDeadline) || !text.includes(expectMail)) fail(`next deadline on ${now}: got "${text}"`);
+    await ctx.close();
+  }
+  console.log('ok   next deadline');
 
   // 5. Inquiry form: validation, mocked success, mocked failure
   for (const outcome of ['success', 'failure']) {
@@ -153,12 +167,10 @@ server.listen(0, async () => {
     console.log(`ok   form (${outcome}, mocked)`);
   }
 
-  // 6. Reduced motion: no running animations, no transform on hero card
+  // 6. Reduced motion: nothing animates
   {
     const { ctx, page } = await newPage(browser, base, [1440, 900], { reducedMotion: 'reduce' });
     await page.goto(base + 'index.html');
-    const t = await page.locator('.hero .mailpiece').evaluate((el) => getComputedStyle(el).transform);
-    if (t !== 'none') fail('hero card still rotated with reduced motion');
     const running = await page.evaluate(() => document.getAnimations().length);
     if (running) fail(`${running} animations running with reduced motion`);
     await ctx.close();

@@ -1,5 +1,24 @@
 # Spotix — QA report
 
+## 2026-10-08 — second redesign
+
+| Check | Result |
+|---|---|
+| `site_audit.py` | 0 errors, 0 warnings (7 pages) |
+| `smoke_check.py` (root and `--subpath lighthouse`) | 17 URLs each, 0 failures |
+| `node --check js/main.js` | pass |
+| `visual_check.cjs`: 7 pages × 7 viewports (320 → 1920) | 0 horizontal overflow, 0 console errors |
+| Mobile menu, FAQ keyboard, form (mocked success and failure, `?spot=duo`), reduced motion | pass |
+| Rate-card diagrams to scale (new) | each about 2× the previous; same diagram width at 390, 700, 768, 1024, 1280, 1440, 1920 |
+| Next booking deadline (new; fixed clock) | Oct 8 → Thu Oct 15 / Nov 1; Oct 20 → Sun Nov 15 / Dec 1; Dec 31 → Fri Jan 15 / Feb 1 |
+| axe-core 4.10 (WCAG 2.0–2.2 A/AA + best practice), 7 pages × 1440 and 390 px, FAQ expanded | 0 violations |
+| No-JS render at 390 px | nav wraps under the brand, no overflow |
+| Focus ring visible on paper, ink and orange grounds | checked visually |
+
+Contrast notes: text on orange is always ink (5.7:1); orange is never used as text colour on light grounds (it fails 3:1 there).
+
+The section below is the previous pass, kept for history.
+
 Run on 2026-09-24 against branch `claude/sharp-dijkstra-l71kfi`.
 
 ## How to run the checks

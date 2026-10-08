@@ -360,8 +360,9 @@ def main() -> int:
     audit_home(parsed)
     audit_robots_sitemap(pages)
 
-    if (ROOT / "CNAME").exists():
-        warn("CNAME", "present. It was deliberately deleted in 6bd1db6; confirm this is intended")
+    cname = ROOT / "CNAME"
+    if cname.exists() and cname.read_text().strip() != "myspotix.com":
+        err("CNAME", f"custom domain is {cname.read_text().strip()!r}, but canonicals use myspotix.com")
 
     for w in warnings:
         print(f"WARN  {w}")
