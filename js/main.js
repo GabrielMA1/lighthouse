@@ -11,6 +11,7 @@
     initHeader();
     initNav();
     initPackageLinks();
+    initNextDeadline();
     initStickyCta();
     initInquiryForm();
   });
@@ -71,6 +72,28 @@
     });
     var fromUrl = new URLSearchParams(window.location.search).get('spot');
     choose(fromUrl);
+  }
+
+  /* Turn "Book by the 15th" into the actual next booking date. The schedule
+     (book by the 15th, mailed by the 1st of the following month) is the
+     published monthly target; without JS the generic sentence stays. */
+  function initNextDeadline() {
+    var el = document.getElementById('next-deadline');
+    if (!el || !window.Intl) return;
+
+    var today = new Date();
+    var bookingOpen = today.getDate() <= 15;
+    var deadline = new Date(today.getFullYear(), today.getMonth() + (bookingOpen ? 0 : 1), 15);
+    var mailing = new Date(deadline.getFullYear(), deadline.getMonth() + 1, 1);
+    var isToday = today.getDate() === 15;
+
+    var long = new Intl.DateTimeFormat('en-CA', { weekday: 'long', month: 'long', day: 'numeric' });
+    var short = new Intl.DateTimeFormat('en-CA', { month: 'long', day: 'numeric' });
+
+    var date = document.createElement('strong');
+    date.textContent = (isToday ? 'today, ' : '') + long.format(deadline);
+    el.textContent = '';
+    el.append('Next booking deadline: ', date, ', for the card mailed by ' + short.format(mailing) + '.');
   }
 
   /* Mobile bar: appears after the hero, stays out of the way near the form. */

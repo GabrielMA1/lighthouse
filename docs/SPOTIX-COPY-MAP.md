@@ -4,20 +4,18 @@ Where each piece of public copy lives and what it's based on. "Prior site" means
 
 ## Homepage (`index.html`) — narrative order
 
+Restructured on 2026-10-08 (see `SPOTIX-IMPLEMENTATION-LOG.md`). No new facts were added; content was merged and reordered.
+
 | # | Section (id) | Purpose | Claims made | Basis |
 |---|---|---|---|---|
-| 1 | Hero | What / where / price anchor | Shared monthly postcard; 10,000 Toronto homes; design, print, Canada Post; from $247 CAD/month | Prior site (hero, pricing, how-it-works step 3) |
-| 1a | Hero figure | Make the product tangible | "Representative layout, not an actual mailing" | Replaces the contradictory "Last Month's Card" |
-| 1b | Spec list | Quick facts | Format, reach, where, included | Prior site |
-| 2 | Audience band | Who it's for | Restaurants, salons & spas, clinics, realtors, home services, retail | Prior "Who It's For" |
-| 3 | `#the-card` | Physical product + spot sizes | Sizes as fractions of the page; per-size inclusions; you provide / Spotix handles | Prior pricing + FAQ ("send your logo + offer", proof before print) |
-| 4 | `#pricing` | Package ledger | Prices, scope, 15% subscription discount, payment before production | Prior pricing; Terms §4 |
-| 5 | `#how-it-works` | Monthly cycle | 15th / 20th / 1st; proof approval; Canada Post; tracking afterwards | Prior "How It Works"; delivery caveat from Terms §9 |
-| 6 | `#coverage` | Area list | 15 areas grouped West/Central/East/North; availability confirmed per mailing | Prior coverage list (grouping is geographic only) |
-| 7 | `#tracking` | Measurement + neutral comparison | QR (Duo, Full), tracking number (Full), offer code (any) | Prior FAQ "How do I track results?" |
-| 8 | `#guides` | Educational reading | Three rewritten guides | See below |
-| 9 | `#faq` | Objections | 9 Q&As | Prior FAQ + Terms §4, §5, §6, §9 |
-| 10 | `#inquire` | Conversion | Formspree form, phone, email, Calendly; reply within one business day | Prior contact section |
+| 1 | Hero (`#the-card`) | What / where / who / price anchor | H1 in "your spot" on an illustrated shared card; neighbouring spots labelled Restaurants (1/4), Salons & spas (1/8), Clinics (1/8); "Illustration of a shared Spotix postcard, not an actual mailing"; from $247 CAD/month, design included | Prior hero + prior "Who it's for" list (now in the card and the lede). Neighbour spots name **categories**, never businesses |
+| 2 | `#pricing` | Rate card: sizes drawn to proportion, prices, scope | Prices, ad space, targeting, tracking; 15% subscription discount; payment before production | Prior sizer + pricing ledger, merged. The identical "10,000 homes" column became one sentence |
+| 3 | `#how-it-works` | Monthly cycle as a calendar | 15th / 20th / 1st; what you send; proof approval; Canada Post; tracking methods (`#tracking`); dates are targets | Prior "How it works", "You provide / Spotix handles" and "Measuring results" merged. JS shows the next real booking date from the visitor's clock |
+| 4 | `#coverage` | Area list | 15 areas grouped West/Central/East/North; targeting by package; ask if your area is missing | Prior coverage |
+| 5 | `#faq` (+ `#guides`) | Objections, with the three guides alongside | 9 Q&As | Prior FAQ + Terms §4, §5, §6, §9 |
+| 6 | `#inquire` | Conversion | Phone (shown large), Calendly, email, Formspree form; reply within one business day | Prior contact section |
+
+**Removed from the homepage:** the "postcard vs. online ads" comparison table (hedged, generic, and covered in depth by the salon and home-services guides) and the spec list under the hero (it repeated the lede).
 
 ## Wording rules
 
@@ -27,6 +25,7 @@ Where each piece of public copy lives and what it's based on. "Prior site" means
 - No urgency devices (counters, "spots left", timers, "limited"). The 15th booking deadline is a real process date and may be stated.
 - Don't name competitors' products as failing. Online ads are described neutrally.
 - Label every schematic as representative, not an actual mailing.
+- Illustrated neighbour spots show business **categories** only: no invented business names, offers, phone numbers or addresses.
 
 ## Guides (`blog/`)
 

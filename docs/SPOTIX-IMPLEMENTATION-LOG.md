@@ -1,5 +1,35 @@
 # Spotix — implementation log
 
+## 2026-10-08 — Second redesign: the rate card, and "orange = yours"
+
+### Why the previous design was replaced
+
+The 2026-09-24 design fixed the content but still read as a template: cream paper + orange + Bricolage Grotesque (a very common "warm AI" look), the same kicker → big heading → grey paragraph structure on all nine sections, hard offset-shadow buttons, an empty hatched wireframe as the "postcard", and print props (crop marks, a ruler) used as decoration. The information also repeated itself: sizes and prices appeared twice (sizer and ledger), tracking three times, and "10,000 homes" was a whole table column of identical values.
+
+### Concept
+
+Spotix sells fractions of one shared postcard. The site is built as that product's **rate card**, the sheet print media have always used to sell ad space (sizes drawn to scale, prices, deadlines, distribution), and the hero *is* the card.
+
+- **Hero = the product.** The H1 sits in "your spot" on an illustrated shared card, beside spots for other kinds of local business, each typeset in its own voice the way neighbouring ads would be. One picture explains the format, the audience and the sizes. It is labelled as an illustration, and neighbours name categories only.
+- **Colour rule: orange marks what belongs to the advertiser.** Your spot, your deadlines (15th, 20th), your next action (buttons, the reply section, the guide CTA). Everything else is ink on white, like a two-colour print job. The 1st (mailing) is ink because it is Spotix's job. Don't use orange for decoration.
+- **Proportion is truth.** Rate-card diagrams are the same card at the same scale, so 1/8 → 1/4 → 1/2 → full can be compared by eye. `tools/visual_check.cjs` measures that each is about twice the previous.
+- **Typography: one family, Archivo** (variable width 62–125%, weight 100–900, SIL OFL). Expanded for headlines, condensed heavy figures for prices, dates and the phone number (shop price-card logic), normal width for reading. It replaces Bricolage Grotesque + Instrument Sans (removed).
+- **Shapes:** square or 2 px corners, no pills, no offset shadows. One soft shadow, only on the two paper objects (the postcard and the reply card).
+- **Motion:** colour changes on hover, the FAQ icon, the mobile bar. Nothing animates on scroll.
+
+### Information architecture
+
+Hero card → rate card → the month (calendar + steps + tracking) → coverage → FAQ with the guides alongside → reply card. Nine sections became six. See `SPOTIX-COPY-MAP.md` for what moved where and what was removed.
+
+### Other changes
+
+- `images/spotix-og.jpg` was AI-style artwork (neon light swooshes, generic envelope). It is now rendered from the same postcard composition: `tools/og-image.html`, regenerated with `node tools/render_og.cjs`. The previous image is in git history.
+- `js/main.js`: `initNextDeadline()` replaces "Book by the 15th" with the actual next date (e.g. "Thursday, October 15, for the card mailed by November 1"). Without JS the generic sentence stays.
+- The interactive CSS `:has()` size picker was removed; the rate card shows all four sizes at once.
+- Navigation: "The postcard" link removed (the hero is the postcard); "Pricing" → "Sizes & prices". All in-page anchor IDs used by other pages still exist (`#the-card`, `#pricing`, `#how-it-works`, `#coverage`, `#tracking`, `#guides`, `#faq`, `#inquire`).
+- Article pages: `aria-current="true"` (not `"page"`) on the Guides nav link, decorative "Read →" removed.
+- `CNAME` (`myspotix.com`) was re-created by the owner in `c5b4e16`; the audit now checks that it matches the canonical host instead of warning.
+
 ## 2026-09-24 — Redesign, truthfulness pass and technical cleanup
 
 ### Visual concept: printed matter
