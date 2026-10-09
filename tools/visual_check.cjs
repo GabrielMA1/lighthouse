@@ -106,34 +106,96 @@ server.listen(0, async () => {
     console.log('ok   FAQ keyboard');
   }
 
-  // 4. Rate card diagrams are drawn to proportion (1/8 : 1/4 : 1/2 : full)
-  {
-    const { ctx, page } = await newPage(browser, base, [1440, 900]);
+  // 4. Diagrams are drawn to proportion (1/8 : 1/4 : 1/2 : full) and at one
+  //    scale: every rate-card diagram has the same width at every viewport,
+  //    each orange area is about twice the previous, the form's "Your spot"
+  //    plan follows the same ratios, and the hero card's spots are in
+  //    proportion where it is laid out as a card (>= 760px).
+  const ratioOk = (r) => r > 1.9 && r < 2.2;
+  for (const vp of [[360, 640], [390, 844], [768, 1024], [1024, 768], [1440, 900]]) {
+    const { ctx, page } = await newPage(browser, base, vp);
     await page.goto(base + 'index.html');
+    const plans = await page.$$eval('.ratecard .plan', (els) => els.map((el) => el.getBoundingClientRect().width));
+    if (plans.length !== 4) fail(`@${vp[0]}: expected 4 rate card diagrams, found ${plans.length}`);
+    if (Math.max(...plans) - Math.min(...plans) > 1) fail(`@${vp[0]}: rate card diagrams differ in width (${plans.map(Math.round).join(', ')})`);
     const areas = await page.$$eval('.ratecard .plan b', (els) => els.map((el) => { const r = el.getBoundingClientRect(); return r.width * r.height; }));
-    if (areas.length !== 4) fail(`expected 4 rate card diagrams, found ${areas.length}`);
     for (let i = 1; i < areas.length; i++) {
-      const ratio = areas[i] / areas[i - 1];
-      if (ratio < 1.8 || ratio > 2.4) fail(`rate card diagram ${i} is ${ratio.toFixed(2)}x the previous one, expected about 2x`);
+      if (!ratioOk(areas[i] / areas[i - 1])) fail(`@${vp[0]}: rate card diagram ${i} is ${(areas[i] / areas[i - 1]).toFixed(2)}x the previous one, expected about 2x`);
+    }
+    const chosen = [];
+    for (const v of ['solo', 'duo', 'full', 'custom']) {
+      await page.selectOption('#f-spot', v);
+      await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
+      chosen.push(await page.$eval('#choice-plan b', (el) => { const r = el.getBoundingClientRect(); return r.width * r.height; }));
+    }
+    for (let i = 1; i < chosen.length; i++) {
+      if (!ratioOk(chosen[i] / chosen[i - 1])) fail(`@${vp[0]}: form plan for size ${i} is ${(chosen[i] / chosen[i - 1]).toFixed(2)}x the previous one`);
+    }
+    if (vp[0] >= 760) {
+      const a = await page.$$eval('.spot--yours, .spot--n1, .spot--n2, .spot--n3', (els) => els.map((el) => { const r = el.getBoundingClientRect(); return r.width * r.height; }));
+      if (!ratioOk(a[0] / a[1]) || !ratioOk(a[1] / a[2]) || Math.abs(a[2] / a[3] - 1) > 0.02) fail(`@${vp[0]}: hero card spots out of proportion (${a.map(Math.round).join(', ')})`);
     }
     await ctx.close();
-    console.log('ok   rate card proportions');
   }
+  console.log('ok   proportions (rate card, form plan, hero card)');
 
-  // 4b. Next booking deadline is computed from the visitor's date
-  for (const [now, expectDeadline, expectMail] of [
-    ['2026-10-08T12:00:00', 'Thursday, October 15', 'November 1'],
-    ['2026-10-20T12:00:00', 'Sunday, November 15', 'December 1'],
-    ['2026-12-31T12:00:00', 'Friday, January 15', 'February 1'],
+  // 4b. Real dates from the visitor's clock, including month and year rollover
+  for (const [now, deadline, mail, month, firstWeekday, tile] of [
+    ['2026-10-08T12:00:00', 'Thursday, October 15', 'November 1', 'October 2026', 3, 'Thu Oct'],
+    ['2026-10-15T12:00:00', 'today, Thursday, October 15', 'November 1', 'October 2026', 3, 'Thu Oct'],
+    ['2026-10-20T12:00:00', 'Sunday, November 15', 'December 1', 'November 2026', 6, 'Sun Nov'],
+    ['2026-12-31T12:00:00', 'Friday, January 15', 'February 1', 'January 2027', 4, 'Fri Jan'],
   ]) {
     const { ctx, page } = await newPage(browser, base, [1440, 900]);
     await page.clock.setFixedTime(new Date(now));
     await page.goto(base + 'index.html');
     const text = await page.locator('#next-deadline').innerText();
-    if (!text.includes(expectDeadline) || !text.includes(expectMail)) fail(`next deadline on ${now}: got "${text}"`);
+    if (!text.includes(deadline) || !text.includes(mail)) fail(`next deadline on ${now}: got "${text}"`);
+    if ((await page.locator('#calendar-month').innerText()) !== month) fail(`calendar month on ${now}`);
+    const lead = await page.$$eval('.calendar__days li', (els) => els.findIndex((li) => !li.classList.contains('is-blank')));
+    if (lead !== firstWeekday) fail(`calendar on ${now}: day 1 in column ${lead}, expected ${firstWeekday}`);
+    const marks = await page.$$eval('.calendar__days .is-you', (els) => els.map((e) => parseInt(e.textContent, 10)));
+    if (marks.join() !== '15,20') fail(`calendar on ${now}: deadlines marked on ${marks.join()}`);
+    if ((await page.locator('[data-step-day="15th"]').innerText()) !== tile) fail(`step tile on ${now}`);
+    if (!(await page.locator('#choice-when').innerText()).includes(mail)) fail(`form summary date on ${now}`);
     await ctx.close();
   }
-  console.log('ok   next deadline');
+  console.log('ok   real dates and rollover');
+
+  // 4c. Choosing a size: rate card, form, summary and mobile bar agree
+  {
+    const { ctx, page } = await newPage(browser, base, [390, 844]);
+    await page.goto(base + 'index.html');
+    await page.click('.size[data-size="full"] [data-package]');
+    // the link targets the form: wait (up to 5s) for it to scroll into view
+    await page.waitForFunction(() => { const t = document.getElementById('inquiry-form').getBoundingClientRect().top; return t >= 0 && t <= 200; }, null, { timeout: 5000 }).catch(() => {});
+    if ((await page.locator('#f-spot').inputValue()) !== 'full') fail('choosing Full did not set the form');
+    if (!(await page.locator('.size[data-size="full"]').evaluate((el) => el.classList.contains('is-selected')))) fail('Full column not marked selected');
+    if ((await page.locator('.size[data-size="full"] [data-package]').getAttribute('aria-current')) !== 'true') fail('Full link missing aria-current');
+    if (!(await page.locator('#choice-when').innerText()).startsWith('1/2 page')) fail('form summary does not describe Full');
+    if (!(await page.locator('.sticky-cta p').innerText()).includes('$597')) fail('mobile bar does not show the chosen size');
+    const top = await page.locator('#inquiry-form').evaluate((el) => el.getBoundingClientRect().top);
+    if (top < 0 || top > 200) fail(`choosing a size did not bring the form into view (top ${Math.round(top)})`);
+    await page.selectOption('#f-spot', 'solo');
+    const selected = await page.$$eval('.size.is-selected', (els) => els.map((e) => e.dataset.size));
+    if (selected.join() !== 'solo') fail(`changing the form did not update the rate card (${selected.join()})`);
+    await page.selectOption('#f-spot', 'not-sure');
+    if (await page.locator('.size.is-selected').count()) fail('"Not sure yet" still marks a size');
+    await ctx.close();
+    console.log('ok   size choice');
+  }
+
+  // 4d. Without JS: generic schedule, plain select, no summary plan
+  {
+    const { ctx, page } = await newPage(browser, base, [390, 844], { javaScriptEnabled: false });
+    await page.goto(base + 'index.html');
+    if (!(await page.locator('#next-deadline').innerText()).includes('15th')) fail('no-JS deadline sentence missing');
+    if (await page.locator('.choice__plan').isVisible()) fail('no-JS shows an empty summary plan');
+    if (!(await page.locator('#f-spot').isVisible())) fail('no-JS spot select not visible');
+    if ((await page.$$('.ratecard .price')).length !== 4) fail('no-JS rate card prices missing');
+    await ctx.close();
+    console.log('ok   no-JS fallback');
+  }
 
   // 5. Inquiry form: validation, mocked success, mocked failure
   for (const outcome of ['success', 'failure']) {
@@ -167,12 +229,15 @@ server.listen(0, async () => {
     console.log(`ok   form (${outcome}, mocked)`);
   }
 
-  // 6. Reduced motion: nothing animates
+  // 6. Reduced motion: nothing animates, including choosing a size
   {
     const { ctx, page } = await newPage(browser, base, [1440, 900], { reducedMotion: 'reduce' });
     await page.goto(base + 'index.html');
-    const running = await page.evaluate(() => document.getAnimations().length);
-    if (running) fail(`${running} animations running with reduced motion`);
+    if (await page.evaluate(() => document.getAnimations().length)) fail('animations running on load with reduced motion');
+    await page.click('.size[data-size="duo"] [data-package]');
+    await page.selectOption('#f-spot', 'full');
+    const running = await page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').length);
+    if (running) fail(`${running} animations running after choosing a size with reduced motion`);
     await ctx.close();
     console.log('ok   reduced motion');
   }

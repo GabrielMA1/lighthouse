@@ -1,6 +1,8 @@
 /* Spotix — small progressive enhancements. The site works without this file:
-   navigation links, the FAQ (<details>), the spot-size picker (CSS :has) and
-   the inquiry form (plain POST to Formspree) all function without JS. */
+   navigation, the FAQ (<details>), the rate card, the generic schedule and
+   the inquiry form (plain POST to Formspree) all function without JS.
+   No libraries: the one animation (the chosen spot resizing) uses the
+   Web Animations API and is skipped when reduced motion is requested. */
 (function () {
   'use strict';
 
@@ -10,9 +12,9 @@
   document.addEventListener('DOMContentLoaded', function () {
     initHeader();
     initNav();
-    initPackageLinks();
-    initNextDeadline();
+    initSchedule();
     initStickyCta();
+    initSpotChoice();
     initInquiryForm();
   });
 
@@ -56,44 +58,183 @@
     });
   }
 
-  /* "Ask about this spot" links preselect the package in the inquiry form. */
-  function initPackageLinks() {
-    var select = document.getElementById('f-spot');
-    if (!select) return;
-    var choose = function (value) {
-      if (!value) return;
-      for (var i = 0; i < select.options.length; i++) {
-        if (select.options[i].value === value) { select.value = value; return; }
-      }
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* The published monthly cycle: book by the 15th, approve the proof by the
+     20th, mailed by the 1st of the following month. After the 15th, the next
+     cycle is next month's. Dates are targets (Terms s.9). */
+  function cycle(now) {
+    var today = now || new Date();
+    var open = today.getDate() <= 15;
+    var y = today.getFullYear();
+    var m = today.getMonth() + (open ? 0 : 1);
+    return {
+      deadline: new Date(y, m, 15),
+      proof: new Date(y, m, 20),
+      mailing: new Date(y, m + 1, 1),
+      isToday: today.getDate() === 15
     };
-    document.addEventListener('click', function (e) {
-      var link = e.target.closest('[data-package]');
-      if (link) choose(link.getAttribute('data-package'));
+  }
+  var fmt = function (opts) { return new Intl.DateTimeFormat('en-CA', opts); };
+
+  /* Real dates for the schedule: the deadline sentence, the step tiles and a
+     weekday-aligned calendar of the booking month. Without JS the generic
+     "15th / 20th / 1st" version stays. */
+  function initSchedule() {
+    if (!window.Intl) return;
+    var c = cycle();
+    var long = fmt({ weekday: 'long', month: 'long', day: 'numeric' });
+    var monthDay = fmt({ month: 'long', day: 'numeric' });
+
+    var el = document.getElementById('next-deadline');
+    if (el) {
+      var date = document.createElement('strong');
+      date.textContent = (c.isToday ? 'today, ' : '') + long.format(c.deadline);
+      el.textContent = '';
+      el.append('Next booking deadline: ', date, ', for the card mailed by ' + monthDay.format(c.mailing) + '.');
+    }
+
+    var dates = { '15th': c.deadline, '20th': c.proof, '1st': c.mailing };
+    var wd = fmt({ weekday: 'short' });
+    var mon = fmt({ month: 'short' });
+    document.querySelectorAll('[data-step-day]').forEach(function (n) {
+      var d = dates[n.getAttribute('data-step-day')];
+      n.textContent = wd.format(d).replace('.', '') + ' ' + mon.format(d).replace('.', '');
     });
-    var fromUrl = new URLSearchParams(window.location.search).get('spot');
-    choose(fromUrl);
+    document.querySelectorAll('[data-step-when]').forEach(function (n) {
+      n.textContent = 'By ' + long.format(dates[n.getAttribute('data-step-when')]) + ': ';
+    });
+
+    var cal = document.getElementById('calendar');
+    var days = cal && cal.querySelector('.calendar__days');
+    if (!days) return;
+    var month = document.getElementById('calendar-month');
+    if (month) month.textContent = fmt({ month: 'long', year: 'numeric' }).format(c.deadline);
+    var head = document.createElement('ol');
+    head.className = 'calendar__wd';
+    ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(function (d) {
+      var li = document.createElement('li'); li.textContent = d.charAt(0); head.appendChild(li);
+    });
+    days.parentNode.insertBefore(head, days);
+    days.textContent = '';
+    var y = c.deadline.getFullYear(), m = c.deadline.getMonth();
+    var lead = (new Date(y, m, 1).getDay() + 6) % 7;   // Monday-first
+    var count = new Date(y, m + 1, 0).getDate();
+    var cell = function (text, cls, note) {
+      var li = document.createElement('li');
+      li.textContent = text;
+      if (cls) li.className = cls;
+      if (note) { var b = document.createElement('b'); b.textContent = note; li.appendChild(b); }
+      days.appendChild(li);
+    };
+    for (var i = 0; i < lead; i++) cell('', 'is-blank');
+    for (var d = 1; d <= count; d++) {
+      if (d === 15) cell(d, 'is-you', 'Book');
+      else if (d === 20) cell(d, 'is-you', 'Proof');
+      else cell(d);
+    }
+    cell(1, 'is-us is-next', 'Mailed');
+    var legend = cal.querySelector('.calendar__legend span + span');
+    if (legend) legend.textContent = 'Mailing, ' + monthDay.format(c.mailing);
   }
 
-  /* Turn "Book by the 15th" into the actual next booking date. The schedule
-     (book by the 15th, mailed by the 1st of the following month) is the
-     published monthly target; without JS the generic sentence stays. */
-  function initNextDeadline() {
-    var el = document.getElementById('next-deadline');
-    if (!el || !window.Intl) return;
+  /* Choosing a size. The rate card, the form's select, the "Your spot"
+     summary in the form and the mobile bar all show the same choice. Size
+     data is read from the rate card, so prices live in one place. */
+  function initSpotChoice() {
+    var select = document.getElementById('f-spot');
+    if (!select) return;
+    var sizes = {};
+    document.querySelectorAll('.size[data-size]').forEach(function (li) {
+      sizes[li.getAttribute('data-size')] = {
+        el: li, name: li.getAttribute('data-name'),
+        fraction: li.getAttribute('data-fraction'), price: li.getAttribute('data-price')
+      };
+    });
+    var CELLS = { solo: 1, duo: 2, full: 4, custom: 8 };
+    var box = document.getElementById('choice');
+    var plan = document.getElementById('choice-plan');
+    var when = document.getElementById('choice-when');
+    var bar = document.querySelector('.sticky-cta p');
+    var barDefault = bar ? bar.innerHTML : '';
 
-    var today = new Date();
-    var bookingOpen = today.getDate() <= 15;
-    var deadline = new Date(today.getFullYear(), today.getMonth() + (bookingOpen ? 0 : 1), 15);
-    var mailing = new Date(deadline.getFullYear(), deadline.getMonth() + 1, 1);
-    var isToday = today.getDate() === 15;
+    var drawPlan = function (value) {
+      var before = plan.querySelector('b');
+      var from = before && before.getBoundingClientRect();
+      var cells = CELLS[value] || 0;
+      plan.className = 'plan' + (cells ? ' plan--' + (value === 'custom' ? 'page' : value) : '');
+      plan.textContent = '';
+      if (cells) plan.appendChild(document.createElement('b'));
+      for (var i = cells; i < 8; i++) plan.appendChild(document.createElement('i'));
+      var after = plan.querySelector('b');
+      // Grow or shrink the orange block from its previous size, so the
+      // difference between sizes is seen, not just stated.
+      if (from && after && !reduceMotion.matches && after.animate) {
+        var to = after.getBoundingClientRect();
+        if (to.width && to.height) {
+          after.style.transformOrigin = '0 0';
+          after.animate([
+            { transform: 'translate(' + (from.left - to.left) + 'px,' + (from.top - to.top) + 'px) scale(' + from.width / to.width + ',' + from.height / to.height + ')' },
+            { transform: 'none' }
+          ], { duration: 320, easing: 'cubic-bezier(.2,.7,.2,1)' });
+        }
+      }
+    };
 
-    var long = new Intl.DateTimeFormat('en-CA', { weekday: 'long', month: 'long', day: 'numeric' });
-    var short = new Intl.DateTimeFormat('en-CA', { month: 'long', day: 'numeric' });
+    var render = function () {
+      var value = select.value;
+      var s = sizes[value];
+      Object.keys(sizes).forEach(function (k) {
+        var on = k === value;
+        sizes[k].el.classList.toggle('is-selected', on);
+        var link = sizes[k].el.querySelector('[data-package]');
+        if (link) { if (on) link.setAttribute('aria-current', 'true'); else link.removeAttribute('aria-current'); }
+      });
+      if (plan) drawPlan(value);
+      if (when) {
+        var text = s ? s.fraction + '. ' : 'We’ll suggest a size when we reply. ';
+        if (window.Intl) {
+          var c = cycle();
+          text += 'For the card mailed by ' + fmt({ month: 'long', day: 'numeric' }).format(c.mailing) +
+            '. Book by ' + (c.isToday ? 'today, ' : '') + fmt({ weekday: 'long', month: 'long', day: 'numeric' }).format(c.deadline) + '.';
+        }
+        when.textContent = text;
+      }
+      if (bar) {
+        if (s) {
+          bar.textContent = '';
+          var strong = document.createElement('strong');
+          strong.textContent = s.name;
+          bar.append(strong, ' ' + s.price);
+        } else {
+          bar.innerHTML = barDefault;
+        }
+      }
+    };
 
-    var date = document.createElement('strong');
-    date.textContent = (isToday ? 'today, ' : '') + long.format(deadline);
-    el.textContent = '';
-    el.append('Next booking deadline: ', date, ', for the card mailed by ' + short.format(mailing) + '.');
+    var choose = function (value, fromLink) {
+      if (!value) return;
+      for (var i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === value) {
+          select.value = value;
+          render();
+          if (fromLink && box && !reduceMotion.matches) {
+            box.classList.remove('is-flash');
+            void box.offsetWidth;
+            box.classList.add('is-flash');
+          }
+          return;
+        }
+      }
+    };
+
+    select.addEventListener('change', render);
+    document.addEventListener('click', function (e) {
+      var link = e.target.closest('[data-package]');
+      if (link) choose(link.getAttribute('data-package'), true);
+    });
+    render();
+    choose(new URLSearchParams(window.location.search).get('spot'));
   }
 
   /* Mobile bar: appears after the hero, stays out of the way near the form. */

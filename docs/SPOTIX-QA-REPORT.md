@@ -1,5 +1,18 @@
 # Spotix — QA report
 
+## 2026-10-09 — size choice and real dates
+
+| Check | Result |
+|---|---|
+| `site_audit.py` (now also requires the `phone` field) | 0 errors, 0 warnings (7 pages) |
+| `smoke_check.py` (root and `--subpath lighthouse`) | 17 URLs each, 0 failures |
+| `node --check js/main.js`, `git diff --check` | pass |
+| `visual_check.cjs`: 7 pages × 7 viewports | 0 horizontal overflow, 0 console errors |
+| Proportions at 5 viewports (rate card, form plan, hero card) | pass |
+| Real dates: Oct 8, Oct 15, Oct 20, Dec 31 | pass |
+| Size choice (both directions), no-JS fallback, reduced motion, mobile menu, FAQ keyboard, form mocked success/failure | pass |
+| axe-core 4.10, 7 pages × 1440 and 390 px | 0 violations |
+
 ## 2026-10-08 — second redesign
 
 | Check | Result |

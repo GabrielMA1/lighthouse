@@ -128,7 +128,7 @@
                 <div class="postcard">
                     <div class="spot spot--yours">
                         <h1 id="hero-title">Put your business on a postcard mailed to 10,000 Toronto homes.</h1>
-                        <p class="spot__size">Your spot</p>
+                        <p class="spot__size">Your spot: from 1/8 to the full page</p>
                     </div>
                     <ul class="neighbours" aria-label="Shared with other local businesses, for example">
                         <li class="spot spot--n1"><span class="neighbour__name">Restaurants</span><span class="spot__size"><span class="spot__pkg">Duo Spot · </span>1/4 page</span></li>
@@ -161,7 +161,7 @@
                 </div>
 
                 <ul class="ratecard">
-                    <li class="size">
+                    <li class="size" data-size="solo" data-name="Solo Spot" data-fraction="1/8 page" data-price="$247 CAD / month">
                         <div class="size__plan" aria-hidden="true"><div class="plan plan--solo"><b></b><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
                         <h3 class="size__name" id="pkg-solo">Solo Spot <small>An eighth of the page</small></h3>
                         <p class="price">$247 <span class="price__per">CAD / month</span></p>
@@ -170,9 +170,9 @@
                             <div><dt>Targeting</dt><dd>1 neighbourhood</dd></div>
                             <div><dt>Design &amp; tracking</dt><dd>Professional design included</dd></div>
                         </dl>
-                        <p class="size__act"><a class="btn btn--small btn--line" href="#inquire" data-package="solo">Ask about Solo<span class="visually-hidden"> Spot</span></a></p>
+                        <p class="size__act"><a class="btn btn--small btn--line" href="#inquiry-form" data-package="solo">Choose Solo<span class="visually-hidden"> Spot</span></a></p>
                     </li>
-                    <li class="size">
+                    <li class="size" data-size="duo" data-name="Duo Spot" data-fraction="1/4 page" data-price="$397 CAD / month">
                         <div class="size__plan" aria-hidden="true"><div class="plan plan--duo"><b></b><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
                         <h3 class="size__name" id="pkg-duo">Duo Spot <small>A quarter of the page</small></h3>
                         <p class="price">$397 <span class="price__per">CAD / month</span></p>
@@ -181,9 +181,9 @@
                             <div><dt>Targeting</dt><dd>2 neighbourhoods</dd></div>
                             <div><dt>Design &amp; tracking</dt><dd>Design + QR code</dd></div>
                         </dl>
-                        <p class="size__act"><a class="btn btn--small btn--line" href="#inquire" data-package="duo">Ask about Duo<span class="visually-hidden"> Spot</span></a></p>
+                        <p class="size__act"><a class="btn btn--small btn--line" href="#inquiry-form" data-package="duo">Choose Duo<span class="visually-hidden"> Spot</span></a></p>
                     </li>
-                    <li class="size">
+                    <li class="size" data-size="full" data-name="Full Spot" data-fraction="1/2 page" data-price="$597 CAD / month">
                         <div class="size__plan" aria-hidden="true"><div class="plan plan--full"><b></b><i></i><i></i><i></i><i></i></div></div>
                         <h3 class="size__name" id="pkg-full">Full Spot <small>Half of the page</small></h3>
                         <p class="price">$597 <span class="price__per">CAD / month</span></p>
@@ -192,9 +192,9 @@
                             <div><dt>Targeting</dt><dd>Full coverage</dd></div>
                             <div><dt>Design &amp; tracking</dt><dd>Design + QR code + phone tracking</dd></div>
                         </dl>
-                        <p class="size__act"><a class="btn btn--small btn--line" href="#inquire" data-package="full">Ask about Full<span class="visually-hidden"> Spot</span></a></p>
+                        <p class="size__act"><a class="btn btn--small btn--line" href="#inquiry-form" data-package="full">Choose Full<span class="visually-hidden"> Spot</span></a></p>
                     </li>
-                    <li class="size">
+                    <li class="size" data-size="custom" data-name="Custom" data-fraction="Full page" data-price="Price on request">
                         <div class="size__plan" aria-hidden="true"><div class="plan plan--page"><b></b></div></div>
                         <h3 class="size__name" id="pkg-custom">Custom <small>The full page</small></h3>
                         <p class="price price--ask">Price on request</p>
@@ -203,7 +203,7 @@
                             <div><dt>Targeting</dt><dd>Custom targeting options</dd></div>
                             <div><dt>Campaign</dt><dd>Multi-month campaigns and subscription options, arranged with you</dd></div>
                         </dl>
-                        <p class="size__act"><a class="btn btn--small btn--line" href="#inquire" data-package="custom">Ask about Custom</a></p>
+                        <p class="size__act"><a class="btn btn--small btn--line" href="#inquiry-form" data-package="custom">Choose Custom</a></p>
                     </li>
                 </ul>
 
@@ -223,7 +223,8 @@
                     <p class="section-lede">Every mailing follows the same schedule, so you always know the next deadline and what we need from you.</p>
                     <p class="next-deadline" id="next-deadline">Book by the 15th to make next month’s card.</p>
 
-                    <div class="calendar" aria-hidden="true">
+                    <div class="calendar" id="calendar" aria-hidden="true">
+                        <p class="calendar__month" id="calendar-month">Every month</p>
                         <ol class="calendar__days">
                             <li>1</li><li>2</li><li>3</li><li>4</li><li>5</li><li>6</li><li>7</li>
                             <li>8</li><li>9</li><li>10</li><li>11</li><li>12</li><li>13</li><li>14</li>
@@ -238,20 +239,20 @@
                 <div class="month__steps">
                     <ol class="steps">
                         <li class="step">
-                            <p class="step__date step__date--you" aria-hidden="true">By the <strong>15th</strong></p>
-                            <h3><span class="visually-hidden">By the 15th: </span>Book your spot</h3>
+                            <p class="step__date step__date--you" aria-hidden="true"><span data-step-day="15th">By the</span> <strong>15th</strong></p>
+                            <h3><span class="visually-hidden" data-step-when="15th">By the 15th: </span>Book your spot</h3>
                             <p>Choose a spot size and your area, and reserve space on next month’s postcard.</p>
                             <p class="step__who"><b>You send:</b> your logo, your offer, any photos you’d like used, and how customers should reach you.</p>
                         </li>
                         <li class="step">
-                            <p class="step__date step__date--you" aria-hidden="true">By the <strong>20th</strong></p>
-                            <h3><span class="visually-hidden">By the 20th: </span>Approve your design</h3>
+                            <p class="step__date step__date--you" aria-hidden="true"><span data-step-day="20th">By the</span> <strong>20th</strong></p>
+                            <h3><span class="visually-hidden" data-step-when="20th">By the 20th: </span>Approve your design</h3>
                             <p>We lay out your spot and send you a proof. Nothing goes to print until you approve it.</p>
                             <p class="step__who"><b>Spotix</b> designs, <b>you</b> approve.</p>
                         </li>
                         <li class="step">
-                            <p class="step__date step__date--us" aria-hidden="true">By the <strong>1st</strong></p>
-                            <h3><span class="visually-hidden">By the 1st: </span>Printed and mailed</h3>
+                            <p class="step__date step__date--us" aria-hidden="true"><span data-step-day="1st">By the</span> <strong>1st</strong></p>
+                            <h3><span class="visually-hidden" data-step-when="1st">By the 1st: </span>Printed and mailed</h3>
                             <p>The postcard is printed and sent out through Canada Post to 10,000 homes.</p>
                             <p class="step__who"><b>Spotix:</b> printing and distribution.</p>
                         </li>
@@ -364,15 +365,11 @@
         <!-- Inquiry: the reply card -->
         <section class="section inquire" id="inquire" aria-labelledby="inquire-title">
             <div class="wrap inquire__grid">
-                <div>
+                <div class="inquire__intro">
                     <h2 class="section-title" id="inquire-title">Reserve your spot.</h2>
                     <p class="section-lede">Send a few details and we’ll reply within one business day to confirm availability and next steps. To make next month’s postcard, book by the 15th.</p>
                     <a class="phone-big" href="tel:+16479063547">647-906-3547</a>
                     <p class="phone-label">Call or text. Or <a href="https://calendly.com/hello-myspotix/10min" target="_blank" rel="noopener">book a 10-minute call<span class="visually-hidden"> (opens Calendly in a new tab)</span></a> and we’ll suggest the right spot size.</p>
-                    <ul class="contact-lines">
-                        <li><span>Email</span><a href="mailto:hello@myspotix.com">hello@myspotix.com</a></li>
-                        <li><span>Based in</span><p>Toronto, Ontario</p></li>
-                    </ul>
                 </div>
 
                 <div class="reply-card">
@@ -380,6 +377,20 @@
                         <h3>Ask about a spot</h3>
                         <p class="muted">Fields marked optional can be left blank.</p>
                         <div class="form-grid">
+                            <div class="field full choice" id="choice">
+                                <div class="choice__plan" aria-hidden="true"><div class="plan" id="choice-plan"></div></div>
+                                <div class="choice__control">
+                                    <label for="f-spot">Your spot</label>
+                                    <select id="f-spot" name="spot_size" aria-describedby="choice-when">
+                                        <option value="not-sure">Not sure yet</option>
+                                        <option value="solo">Solo Spot — $247 CAD / month</option>
+                                        <option value="duo">Duo Spot — $397 CAD / month</option>
+                                        <option value="full">Full Spot — $597 CAD / month</option>
+                                        <option value="custom">Custom — contact for pricing</option>
+                                    </select>
+                                    <p class="choice__when" id="choice-when"></p>
+                                </div>
+                            </div>
                             <div class="field">
                                 <label for="f-name">Your name</label>
                                 <input id="f-name" name="name" type="text" autocomplete="name" required aria-describedby="f-name-error">
@@ -395,14 +406,8 @@
                                 <input id="f-business" name="business" type="text" autocomplete="organization">
                             </div>
                             <div class="field">
-                                <label for="f-spot">Spot you’re interested in</label>
-                                <select id="f-spot" name="spot_size">
-                                    <option value="not-sure">Not sure yet</option>
-                                    <option value="solo">Solo Spot — $247 CAD / month</option>
-                                    <option value="duo">Duo Spot — $397 CAD / month</option>
-                                    <option value="full">Full Spot — $597 CAD / month</option>
-                                    <option value="custom">Custom — contact for pricing</option>
-                                </select>
+                                <label for="f-phone">Phone <span class="opt">(optional)</span></label>
+                                <input id="f-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel">
                             </div>
                             <div class="field full">
                                 <label for="f-message">Message <span class="opt">(optional)</span></label>
@@ -425,6 +430,20 @@
                         <h3>Thanks, your inquiry is in.</h3>
                         <p>We’ll reply within one business day to confirm availability and next steps. If it’s urgent, call or text <a href="tel:+16479063547">647-906-3547</a>.</p>
                     </div>
+                </div>
+
+                <div class="inquire__after">
+                    <h3 class="next-title">After you send this</h3>
+                    <ol class="next-steps">
+                        <li><b>Within one business day,</b> we reply to confirm availability and next steps. Sending the form doesn’t commit you to a booking.</li>
+                        <li><b>Before production,</b> you pay in full by credit card or electronic transfer. Cancel at least 14 days before the mailing date for a full refund.</li>
+                        <li><b>By the 20th,</b> you approve your proof. Nothing is printed until you do.</li>
+                        <li><b>By the 1st,</b> the card is set to go out through Canada Post. Delivery dates are estimates.</li>
+                    </ol>
+                    <ul class="contact-lines">
+                        <li><span>Email</span><a href="mailto:hello@myspotix.com">hello@myspotix.com</a></li>
+                        <li><span>Based in</span><p>Toronto, Ontario</p></li>
+                    </ul>
                 </div>
             </div>
         </section>

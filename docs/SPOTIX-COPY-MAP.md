@@ -13,7 +13,7 @@ Restructured on 2026-10-08 (see `SPOTIX-IMPLEMENTATION-LOG.md`). No new facts we
 | 3 | `#how-it-works` | Monthly cycle as a calendar | 15th / 20th / 1st; what you send; proof approval; Canada Post; tracking methods (`#tracking`); dates are targets | Prior "How it works", "You provide / Spotix handles" and "Measuring results" merged. JS shows the next real booking date from the visitor's clock |
 | 4 | `#coverage` | Area list | 15 areas grouped West/Central/East/North; targeting by package; ask if your area is missing | Prior coverage |
 | 5 | `#faq` (+ `#guides`) | Objections, with the three guides alongside | 9 Q&As | Prior FAQ + Terms §4, §5, §6, §9 |
-| 6 | `#inquire` | Conversion | Phone (shown large), Calendly, email, Formspree form; reply within one business day | Prior contact section |
+| 6 | `#inquire` (form: `#inquiry-form`) | Conversion | Phone (shown large), Calendly, email; Formspree form led by the chosen spot; "After you send this": reply within one business day, payment before production, 14-day cancellation, proof by the 20th, mailing by the 1st as an estimate | Prior contact section; Terms §4, §5, §9 |
 
 **Removed from the homepage:** the "postcard vs. online ads" comparison table (hedged, generic, and covered in depth by the salon and home-services guides) and the spec list under the hero (it repeated the lede).
 
