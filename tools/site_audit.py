@@ -28,7 +28,7 @@ FORMSPREE = "https://formspree.io/f/mzdorlpr"
 CALENDLY = "https://calendly.com/hello-myspotix/10min"
 EMAIL = "hello@myspotix.com"
 PHONE_TEL = "tel:+16479063547"
-FORM_FIELDS = {"name", "email", "business", "spot_size", "message"}
+FORM_FIELDS = {"name", "email", "business", "phone", "spot_size", "message"}
 
 # Phrases removed because they could not be verified. Case-insensitive.
 BANNED = {

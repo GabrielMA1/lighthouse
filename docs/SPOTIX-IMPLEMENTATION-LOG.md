@@ -1,5 +1,37 @@
 # Spotix — implementation log
 
+## 2026-10-09 — Choosing a spot, real dates, and the library evaluation
+
+### What changed and why
+
+- **Mobile first screen.** Below 900px the price and "Reserve a spot" come before the description. Reserve button top: 857 → 560 px at 360×640, 797 → 590 px at 390×844. Headline slightly smaller under 380px.
+- **Rate card on phones: two columns from 360px**, so sizes sit side by side at one scale (it was a single 1,500 px column). Under 360px it stays one column.
+- **Choosing a size.** "Ask about Solo" etc. became "Choose Solo" and link to `#inquiry-form`. Choosing marks the column (orange bar, filled button, `aria-current="true"`), sets the form's select, updates the mobile bar ("Full Spot $597 CAD / month"), and briefly outlines the form's spot field. It works both ways: changing the select updates the rate card. Size data is read from `data-*` on the rate card, so prices exist in one place.
+- **"Your spot" is the first form field.** The `spot_size` select (name and values unchanged) now carries a to-scale plan of the chosen size and the real dates ("1/2 page. For the card mailed by November 1. Book by Thursday, October 15."). Without JS it is a plain select. The orange block resizes from the previous size (320 ms, Web Animations API, skipped with reduced motion).
+- **Real schedule.** One `cycle()` function computes deadline (15th), proof (20th) and mailing (1st of next month), rolling to the next month after the 15th and across years. It feeds the deadline sentence, the step tiles ("Thu Oct 15th"), their screen-reader text ("By Thursday, October 15:"), a weekday-aligned calendar of the booking month, and the form summary. Without JS the generic "15th / 20th / 1st" content stays.
+- **"After you send this"** in the reservation section: reply within one business day; full payment before production (credit card or e-transfer) and 14-day cancellation (Terms §4–5); proof by the 20th; mailing set for the 1st, dates are estimates (Terms §9). No new commitments. On phones it follows the form; on desktop it sits beside it.
+- **Optional `phone` field** added to the form (autocomplete `tel`). The Privacy Policy already lists phone numbers among the details collected. Formspree will receive it as a new field.
+- **Reduced motion** now removes transitions and animations entirely (it previously shortened them to 0.01 ms).
+- Hero label: "Your spot: from 1/8 to the full page".
+
+### Libraries evaluated (none added)
+
+| Resource | Decision | Reason |
+|---|---|---|
+| GSAP 3.15 | Not installed | The site has no package manager and a no-runtime-CDN rule, so GSAP would be a ~37 KB vendored file under GSAP's "Standard no-charge" licence (free, not OSI open source). The only motion that clarifies the product, the chosen spot resizing, is ~20 lines of the native Web Animations API. A load-in sequence for the postcard was rejected: it would delay the headline and price without explaining anything new. |
+| Lenis 1.3 (MIT) | Not used | Native scrolling already gives correct anchors, browser history, find-in-page, keyboard and touch behaviour, and `scroll-padding` keeps targets clear of the sticky header. Smooth-scroll hijacking adds friction on a price-and-deadline page. |
+| React Bits (MIT + Commons Clause) | Not used | Its components are text effects, backgrounds and decorative animation, and need React. Nothing helps someone compare sizes or reserve. |
+| 21st.dev | Not reviewed directly (blocked by this environment's network policy) | A registry of React/Tailwind/shadcn components. The useful patterns (a selected state on the size choice, an inline summary of the selection, a numbered "what happens next" list) were built natively in the existing system. |
+
+### Tests added or strengthened (`tools/visual_check.cjs`)
+
+- Proportions at 360, 390, 768, 1024 and 1440 px: all rate-card diagrams the same width (±1 px); each orange area 1.9–2.2× the previous; the same ratios for the form's plan; hero spots in proportion (≥ 760 px).
+- Dates with a fixed clock: Oct 8, Oct 15 ("today"), Oct 20 (month rollover) and Dec 31 (year rollover): deadline sentence, calendar month, weekday alignment, marked days, step tile, form summary.
+- Size choice: the rate card → form, mobile bar and `aria-current`; the form brought into view; select → rate card; "Not sure yet" clears the selection.
+- No-JS: generic deadline, plain select, prices present.
+- Reduced motion: no running animations on load or after choosing a size.
+- `site_audit.py` now requires the `phone` field in the form wiring.
+
 ## 2026-10-08 — Second redesign: the rate card, and "orange = yours"
 
 ### Why the previous design was replaced
